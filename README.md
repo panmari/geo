@@ -46,6 +46,9 @@ The library provides the following:
     as collections of discrete "S2 cells". This feature makes it easy to build
     large distributed spatial indexes.
 
+*   Translate angles and steradians into distances and areas using earth's radius
+    through the [`earth`](earth/earth_example_test.go)  package.
+
 On the other hand, the following are outside the scope of S2:
 
 *   Planar geometry.
@@ -100,148 +103,148 @@ Legend:
 
 ## [ℝ¹](https://pkg.go.dev/github.com/golang/geo/r1) - One-dimensional Cartesian coordinates
 
-C++ Type   | Go
-:--------- | ---
-R1Interval | ✅
+| C++ Type   | Go  |
+| :--------- | --- |
+| R1Interval | ✅   |
 
 ## [ℝ²](https://pkg.go.dev/github.com/golang/geo/r2) - Two-dimensional Cartesian coordinates
 
-C++ Type | Go
-:------- | ---
-R2Point  | ✅
-R2Rect   | ✅
+| C++ Type | Go  |
+| :------- | --- |
+| R2Point  | ✅   |
+| R2Rect   | ✅   |
 
 ## [ℝ³](https://pkg.go.dev/github.com/golang/geo/r3) - Three-dimensional Cartesian coordinates
 
-C++ Type      | Go
-:------------ | ---
-R3Vector      | ✅
-R3ExactVector | ✅
-Matrix3x3     | ✅
+| C++ Type      | Go  |
+| :------------ | --- |
+| R3Vector      | ✅   |
+| R3ExactVector | ✅   |
+| Matrix3x3     | ✅   |
 
 ## [S¹](https://pkg.go.dev/github.com/golang/geo/s1) - Circular Geometry
 
-C++ Type     | Go
-:----------- | ---
-S1Angle      | ✅
-S1ChordAngle | ✅
-S1Interval   | ✅
+| C++ Type     | Go  |
+| :----------- | --- |
+| S1Angle      | ✅   |
+| S1ChordAngle | ✅   |
+| S1Interval   | ✅   |
 
 ## [S²](https://pkg.go.dev/github.com/golang/geo/s2) - Spherical Geometry
 
 ### Basic Types
 
-C++ Type             | Go
-:------------------- | ---
-S2Cap                | ✅
-S2Cell               | ✅
-S2CellId             | ✅
-S2CellIdVector       | ❌
-S2CellIndex          | 🟡
-S2CellUnion          | ✅
-S2Coords             | ✅
-S2DensityTree        | ❌
-S2DistanceTarget     | ✅
-S2EdgeVector         | ✅
-S2LatLng             | ✅
-S2LatLngRect         | ✅
-S2LaxLoop            | 🟡
-S2LaxPolygon         | 🟡
-S2LaxPolyline        | 🟡
-S2Loop               | ✅
-S2PaddedCell         | ✅
-S2Point              | ✅
-S2PointIndex         | ❌
-S2PointSpan          | ❌
-S2PointRegion        | ❌
-S2PointVector        | ✅
-S2Polygon            | 🟡
-S2Polyline           | ✅
-S2R2Rect             | ❌
-S2Region             | ✅
-S2RegionCoverer      | ✅
-S2RegionIntersection | ❌
-S2RegionUnion        | ✅
-S2Shape              | ✅
-S2ShapeIndex         | ✅
-S2ShapeIndexRegion   | ❌
-EncodedLaxPolygon    | ❌
-EncodedLaxPolyline   | ❌
-EncodedShapeIndex    | ❌
-EncodedStringVector  | ❌
-EncodedUintVector    | ❌
-IdSetLexicon         | ❌
-ValueSetLexicon      | ❌
-SequenceLexicon      | ❌
-LaxClosedPolyline    | ❌
-VertexIDLaxLoop      | ❌
+| C++ Type             | Go  |
+| :------------------- | --- |
+| S2Cap                | ✅   |
+| S2Cell               | ✅   |
+| S2CellId             | ✅   |
+| S2CellIdVector       | ❌   |
+| S2CellIndex          | 🟡   |
+| S2CellUnion          | ✅   |
+| S2Coords             | ✅   |
+| S2DensityTree        | ❌   |
+| S2DistanceTarget     | ✅   |
+| S2EdgeVector         | ✅   |
+| S2LatLng             | ✅   |
+| S2LatLngRect         | ✅   |
+| S2LaxLoop            | 🟡   |
+| S2LaxPolygon         | 🟡   |
+| S2LaxPolyline        | 🟡   |
+| S2Loop               | ✅   |
+| S2PaddedCell         | ✅   |
+| S2Point              | ✅   |
+| S2PointIndex         | ❌   |
+| S2PointSpan          | ❌   |
+| S2PointRegion        | ❌   |
+| S2PointVector        | ✅   |
+| S2Polygon            | 🟡   |
+| S2Polyline           | ✅   |
+| S2R2Rect             | ❌   |
+| S2Region             | ✅   |
+| S2RegionCoverer      | ✅   |
+| S2RegionIntersection | ❌   |
+| S2RegionUnion        | ✅   |
+| S2Shape              | ✅   |
+| S2ShapeIndex         | ✅   |
+| S2ShapeIndexRegion   | ❌   |
+| EncodedLaxPolygon    | ❌   |
+| EncodedLaxPolyline   | ❌   |
+| EncodedShapeIndex    | ❌   |
+| EncodedStringVector  | ❌   |
+| EncodedUintVector    | ❌   |
+| IdSetLexicon         | ❌   |
+| ValueSetLexicon      | ❌   |
+| SequenceLexicon      | ❌   |
+| LaxClosedPolyline    | ❌   |
+| VertexIDLaxLoop      | ❌   |
 
 ### Query Types
 
-C++ Type             | Go
-:------------------- | ---
-S2ChainInterpolation | ❌
-S2ClosestCell        | ❌
-S2FurthestCell       | ❌
-S2ClosestEdge        | ✅
-S2FurthestEdge       | ✅
-S2ClosestPoint       | ❌
-S2FurthestPoint      | ❌
-S2ContainsPoint      | ✅
-S2ContainsVertex     | ✅
-S2ConvexHull         | ✅
-S2CrossingEdge       | ✅
-S2HausdorffDistance  | ❌
-S2ShapeNesting       | ❌
-S2ValidationQuery    | ❌
+| C++ Type             | Go  |
+| :------------------- | --- |
+| S2ChainInterpolation | ❌   |
+| S2ClosestCell        | ❌   |
+| S2FurthestCell       | ❌   |
+| S2ClosestEdge        | ✅   |
+| S2FurthestEdge       | ✅   |
+| S2ClosestPoint       | ❌   |
+| S2FurthestPoint      | ❌   |
+| S2ContainsPoint      | ✅   |
+| S2ContainsVertex     | ✅   |
+| S2ConvexHull         | ✅   |
+| S2CrossingEdge       | ✅   |
+| S2HausdorffDistance  | ❌   |
+| S2ShapeNesting       | ❌   |
+| S2ValidationQuery    | ❌   |
 
 ### Supporting Types
 
-C++ Type                         | Go
-:------------------------------- | ---
-S2BooleanOperation               | ❌
-S2BufferOperation                | ❌
-S2Builder                        | ❌
-S2BuilderGraph                   | ❌
-S2BuilderLayer                   | ❌
-S2BuilderUtil_\*                 | ❌
-S2CellIterator                   | ❌
-S2CellIteratorJoin               | ❌
-S2CellRangeIterator              | ❌
-S2Coder                          | ❌
-S2Earth                          | ❌
-S2EdgeClipping                   | ✅
-S2EdgeCrosser                    | ✅
-S2EdgeCrossings                  | ✅
-S2EdgeDistances                  | ✅
-S2EdgeTessellator                | ✅
-S2Fractal                        | ❌
-S2LoopMeasures                   | ❌
-S2Measures                       | ✅
-S2MemoryTracker                  | ❌
-S2Metrics                        | ❌
-S2PointUtil                      | 🟡
-S2PointCompression               | 🟡
-S2PolygonBuilder                 | ❌
-S2PolylineAlignment              | ❌
-S2PolylineMeasures               | ✅
-S2PolylineSimplifier             | ❌
-S2Predicates                     | ✅
-S2Projections                    | ❌
-S2Random                         | ❌
-S2RectBounder                    | ❌
-S2RegionSharder                  | ❌
-S2RegionTermIndexer              | ❌
-S2ShapeIndexBufferedRegion       | ❌
-S2ShapeIndexMeasures             | ❌
-S2ShapeIndexUtil\*               | 🟡
-S2ShapeMeasures                  | ❌
-S2ShapeUtil\*                    | 🟡
-S2Stats                          | ❌
-S2Testing                        | ✅
-S2TextFormat                     | ✅
-S2WedgeRelations                 | ✅
-S2WindingOperation               | ❌
+| C++ Type                   | Go  |
+| :------------------------- | --- |
+| S2BooleanOperation         | ❌   |
+| S2BufferOperation          | ❌   |
+| S2Builder                  | ❌   |
+| S2BuilderGraph             | ❌   |
+| S2BuilderLayer             | ❌   |
+| S2BuilderUtil_\*           | ❌   |
+| S2CellIterator             | ❌   |
+| S2CellIteratorJoin         | ❌   |
+| S2CellRangeIterator        | ❌   |
+| S2Coder                    | ❌   |
+| S2Earth                    | ❌   |
+| S2EdgeClipping             | ✅   |
+| S2EdgeCrosser              | ✅   |
+| S2EdgeCrossings            | ✅   |
+| S2EdgeDistances            | ✅   |
+| S2EdgeTessellator          | ✅   |
+| S2Fractal                  | ❌   |
+| S2LoopMeasures             | ❌   |
+| S2Measures                 | ✅   |
+| S2MemoryTracker            | ❌   |
+| S2Metrics                  | ❌   |
+| S2PointUtil                | 🟡   |
+| S2PointCompression         | 🟡   |
+| S2PolygonBuilder           | ❌   |
+| S2PolylineAlignment        | ❌   |
+| S2PolylineMeasures         | ✅   |
+| S2PolylineSimplifier       | ❌   |
+| S2Predicates               | ✅   |
+| S2Projections              | ❌   |
+| S2Random                   | ❌   |
+| S2RectBounder              | ❌   |
+| S2RegionSharder            | ❌   |
+| S2RegionTermIndexer        | ❌   |
+| S2ShapeIndexBufferedRegion | ❌   |
+| S2ShapeIndexMeasures       | ❌   |
+| S2ShapeIndexUtil\*         | 🟡   |
+| S2ShapeMeasures            | ❌   |
+| S2ShapeUtil\*              | 🟡   |
+| S2Stats                    | ❌   |
+| S2Testing                  | ✅   |
+| S2TextFormat               | ✅   |
+| S2WedgeRelations           | ✅   |
+| S2WindingOperation         | ❌   |
 
 
 ### Encode/Decode
