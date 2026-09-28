@@ -974,7 +974,7 @@ func (s *ShapeIndex) shrinkToFit(pcell *PaddedCell, bound r2.Rect) CellID {
 	if !s.isFirstUpdate() && shrunkID != pcell.CellID() {
 		// Don't shrink any smaller than the existing index cells, since we need
 		// to combine the new edges with those cells.
-		iter := s.Iterator()
+		iter := NewShapeIndexIterator(s)
 		if iter.LocateCellID(shrunkID) == Indexed {
 			shrunkID = iter.CellID()
 		}
@@ -1028,7 +1028,7 @@ func (s *ShapeIndex) updateEdges(pcell *PaddedCell, edges []*clippedEdge, t *tra
 		// There may be existing index cells contained inside pcell. If we
 		// encounter such a cell, we need to combine the edges being updated with
 		// the existing cell contents by absorbing the cell.
-		iter := s.Iterator()
+		iter := NewShapeIndexIterator(s)
 		r := iter.LocateCellID(pcell.id)
 		switch r {
 		case Disjoint:
