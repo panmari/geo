@@ -15,6 +15,9 @@
 package s2
 
 import (
+	"math"
+	"math/rand"
+	"slices"
 	"testing"
 
 	"github.com/golang/geo/r3"
@@ -546,9 +549,129 @@ func TestShapeIndexNumEdgesUpTo(t *testing.T) {
 	}
 }
 
+func TestShapeIndexSimpleUpdates(t *testing.T) {
+	polygon := concentricLoopsPolygon(PointFromCoords(1, 0, 0), 5, 20)
+	index := NewShapeIndex()
+	var added []Shape
+
+	for _, loop := range polygon.loops {
+		index.Add(loop)
+		added = append(added, loop)
+		validateShapeIndexCrossings(t, index, added, len(added), 0)
+	}
+
+	for id := int32(0); id < int32(len(polygon.loops)); id++ {
+		shape := index.Shape(id)
+		index.Remove(shape)
+		if got := index.Shape(id); got != nil {
+			t.Errorf("index.Shape(%d) = %v, want nil after removal", id, got)
+		}
+		added = slices.Delete(added, 0, 1)
+		validateShapeIndexCrossings(t, index, added, len(added), int(id))
+	}
+}
+
+func TestShapeIndexRandomUpdates(t *testing.T) {
+	index := NewShapeIndex()
+	shapes := []Shape{
+		makePolyline("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6"),
+		makePolyline("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6"),
+		makePolyline("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6"),
+		RegularLoop(Point{PointFromCoords(1, 0.5, 0.5).Normalize()}, s1.Degree*89, 20),
+	}
+
+	polygon := concentricLoopsPolygon(Point{PointFromCoords(1, -1, -1).Normalize()}, 5, 20)
+	for _, loop := range polygon.loops {
+		shapes = append(shapes, loop)
+	}
+	shapes = append(shapes,
+		RegularLoop(Point{PointFromCoords(-1, 1, 1).Normalize()}, s1.Angle(math.Pi-0.001), 10),
+		RegularLoop(Point{PointFromCoords(-1, -1, -1).Normalize()}, s1.Angle(math.Pi-0.001), 10),
+		EmptyLoop(),
+		FullLoop(),
+	)
+
+	added := append([]Shape(nil), shapes...)
+	for _, shape := range added {
+		index.Add(shape)
+	}
+	validateShapeIndexCrossings(t, index, added, 1, 0)
+
+	rng := rand.New(rand.NewSource(*s2RandomSeed))
+	var released []Shape
+	for iteration := range 100 {
+		numUpdates := 1 + skewedInt(5, rng)
+		for range numUpdates {
+			if randomUniformInt(2, rng) == 0 && len(added) > 0 {
+				shapeIndex := randomUniformInt(len(added), rng)
+				shape := added[shapeIndex]
+				index.Remove(shape)
+				released = append(released, shape)
+				added = slices.Delete(added, shapeIndex, shapeIndex+1)
+			} else if len(released) > 0 {
+				shapeIndex := randomUniformInt(len(released), rng)
+				shape := released[shapeIndex]
+				index.Add(shape)
+				added = append(added, shape)
+				released = slices.Delete(released, shapeIndex, shapeIndex+1)
+			}
+		}
+		validateShapeIndexCrossings(t, index, added, 1, iteration)
+	}
+}
+
+func validateShapeIndexCrossings(t *testing.T, index *ShapeIndex, shapes []Shape, maxProbes, offset int) {
+	t.Helper()
+	index.Build()
+	if got := index.Len(); got != len(shapes) {
+		t.Fatalf("index.Len() = %d, want %d", got, len(shapes))
+	}
+	for _, shape := range shapes {
+		if id := index.idForShape(shape); id < 0 || index.Shape(id) != shape {
+			t.Fatalf("shape %v is missing from the index", shape)
+		}
+	}
+
+	query := NewCrossingEdgeQuery(index)
+	for _, shape := range shapes {
+		numEdges := shape.NumEdges()
+		if numEdges == 0 {
+			continue
+		}
+		probes := min(maxProbes, numEdges)
+		for probe := range probes {
+			edgeID := (offset + probe*numEdges/probes) % numEdges
+			edge := shape.Edge(edgeID)
+			got := query.CrossingsEdgeMap(edge.V0, edge.V1, CrossingTypeAll)
+			expectedShapeCount := 0
+			for _, candidate := range shapes {
+				var want []int
+				for candidateEdgeID := 0; candidateEdgeID < candidate.NumEdges(); candidateEdgeID++ {
+					candidateEdge := candidate.Edge(candidateEdgeID)
+					if CrossingSign(edge.V0, edge.V1, candidateEdge.V0, candidateEdge.V1) != DoNotCross {
+						want = append(want, candidateEdgeID)
+					}
+				}
+				gotEdges, ok := got[candidate]
+				if len(want) == 0 {
+					if ok {
+						t.Errorf("query returned non-crossing shape %v", candidate)
+					}
+					continue
+				}
+				expectedShapeCount++
+				if !ok || !slices.Equal(gotEdges, want) {
+					t.Errorf("crossings for edge %d of %v = %v, want %v", edgeID, shape, gotEdges, want)
+				}
+			}
+			if len(got) != expectedShapeCount {
+				t.Errorf("query returned %d shapes, want %d", len(got), expectedShapeCount)
+			}
+		}
+	}
+}
+
 // TODO(roberts): Differences from C++:
-// TestShapeIndexSimpleUpdates(t *testing.T) {}
-// TestShapeIndexRandomUpdates(t *testing.T) {}
 // TestShapeIndexHasCrossing(t *testing.T) {}
 
 func BenchmarkShapeIndexIteratorLocatePoint(b *testing.B) {

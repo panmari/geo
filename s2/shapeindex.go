@@ -974,7 +974,7 @@ func (s *ShapeIndex) shrinkToFit(pcell *PaddedCell, bound r2.Rect) CellID {
 	if !s.isFirstUpdate() && shrunkID != pcell.CellID() {
 		// Don't shrink any smaller than the existing index cells, since we need
 		// to combine the new edges with those cells.
-		iter := s.Iterator()
+		iter := NewShapeIndexIterator(s)
 		if iter.LocateCellID(shrunkID) == Indexed {
 			shrunkID = iter.CellID()
 		}
@@ -1028,7 +1028,7 @@ func (s *ShapeIndex) updateEdges(pcell *PaddedCell, edges []*clippedEdge, t *tra
 		// There may be existing index cells contained inside pcell. If we
 		// encounter such a cell, we need to combine the edges being updated with
 		// the existing cell contents by absorbing the cell.
-		iter := s.Iterator()
+		iter := NewShapeIndexIterator(s)
 		r := iter.LocateCellID(pcell.id)
 		switch r {
 		case Disjoint:
@@ -1036,7 +1036,7 @@ func (s *ShapeIndex) updateEdges(pcell *PaddedCell, edges []*clippedEdge, t *tra
 		case Indexed:
 			// Absorb the index cell by transferring its contents to edges and
 			// deleting it. We also start tracking the interior of any new shapes.
-			s.absorbIndexCell(pcell, iter, edges, t)
+			edges = s.absorbIndexCell(pcell, iter, edges, t)
 			indexCellAbsorbed = true
 			disjointFromIndex = true
 		case Subdivided:
@@ -1363,7 +1363,7 @@ func (s *ShapeIndex) clipVAxis(edge *clippedEdge, middle r1.Interval) (a, b *cli
 // and/or "tracker", and then delete this cell from the index. If edges includes
 // any edges that are being removed, this method also updates their
 // InteriorTracker state to correspond to the exit vertex of this cell.
-func (s *ShapeIndex) absorbIndexCell(p *PaddedCell, iter *ShapeIndexIterator, edges []*clippedEdge, t *tracker) {
+func (s *ShapeIndex) absorbIndexCell(p *PaddedCell, iter *ShapeIndexIterator, edges []*clippedEdge, t *tracker) []*clippedEdge {
 	// When we absorb a cell, we erase all the edges that are being removed.
 	// However when we are finished with this cell, we want to restore the state
 	// of those edges (since that is how we find all the index cells that need
@@ -1453,7 +1453,7 @@ func (s *ShapeIndex) absorbIndexCell(p *PaddedCell, iter *ShapeIndexIterator, ed
 			faceEdges = append(faceEdges, edge)
 		}
 	}
-	// Now create a clippedEdge for each faceEdge, and put them in "new_edges".
+	// Create a clippedEdge for each faceEdge, and put them in newEdges.
 	var newEdges []*clippedEdge
 	for _, faceEdge := range faceEdges {
 		clipped := &clippedEdge{
@@ -1463,8 +1463,7 @@ func (s *ShapeIndex) absorbIndexCell(p *PaddedCell, iter *ShapeIndexIterator, ed
 		newEdges = append(newEdges, clipped)
 	}
 
-	// Discard any edges from "edges" that are being removed, and append the
-	// remainder to "newEdges"  (This keeps the edges sorted by shape id.)
+	// Discard removed edges, then append the remaining edges in shape ID order.
 	for i, clipped := range edges {
 		if !s.isShapeBeingRemoved(clipped.faceEdge.shapeID) {
 			newEdges = append(newEdges, edges[i:]...)
@@ -1472,12 +1471,9 @@ func (s *ShapeIndex) absorbIndexCell(p *PaddedCell, iter *ShapeIndexIterator, ed
 		}
 	}
 
-	// Update the edge list and delete this cell from the index.
-	// TODO(rsned): Figure out best fix for this. Linters are
-	// flagging the swap because newEdges is no longer used after
-	// this.
-	edges, newEdges = newEdges, edges // nolint
+	// Delete this cell from the index.
 	delete(s.cellMap, p.id)
+	return newEdges
 }
 
 // testAllEdges calls the trackers testEdge on all edges from shapes that have interiors.
